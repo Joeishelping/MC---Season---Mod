@@ -10,17 +10,45 @@ import {
   setSeasonLength,
 } from "./clock.js";
 import { getSettings, MAX_SEASON_LENGTH, MIN_SEASON_LENGTH, saveSettings } from "./settings.js";
+import { seasonalTemperature, toCelsius } from "./climate.js";
+import { isBlizzard, isSnowstorm, isStorming } from "./weather.js";
 
 const SEASON_BLURB = {
-  spring: "Heavy rain. Cooler places start snowy and thaw as it warms up. Snow melts and plants come back.",
-  summer: "Rain and sunshine. Crops out in the sun grow faster. Summer storms.",
-  fall: "Getting colder. Leaves fall, and late in the season grass and flowers die off.",
-  winter: "Snow anywhere it can snow. It piles up, and water freezes. Everything comes back in spring.",
+  spring: "Days are getting longer. Heavy rain and misty mornings. Cool places start snowy and thaw as it warms; lakes are the last to melt. Snow melts and plants come back.",
+  summer: "Long days and short nights. Rain and sunshine, afternoon thunderstorms, fireflies at night. Crops in the sun grow faster.",
+  fall: "Days are getting shorter. Misty mornings and falling leaves; the first frosts come at night, then grass and flowers die off.",
+  winter: "Short days and long nights. Snow anywhere it can snow - from light flurries to blizzards. It piles up, and lakes freeze over. Mild spells can melt it for a while.",
 };
 
 export function seasonLine() {
   const season = currentSeason();
   return `${SEASON_COLORS[season]}${SEASON_NAMES[season]}§r - Day ${dayOfSeason()}/${seasonLength()}`;
+}
+
+/** "12°C" / "54°F" at the player's position, or "" if unknown (e.g. in the Nether). */
+export function temperatureText(player) {
+  try {
+    if (player.dimension.id !== "minecraft:overworld") return "";
+    const biome = player.dimension.getBiome(player.location);
+    const c = toCelsius(seasonalTemperature(biome, player.location.y));
+    const color = c <= 0 ? "§b" : c >= 28 ? "§c" : c >= 18 ? "§e" : "§a";
+    return getSettings().fahrenheit ? `${color}${Math.round(c * 1.8 + 32)}°F§r` : `${color}${c}°C§r`;
+  } catch {
+    return "";
+  }
+}
+
+function skyText() {
+  if (!isStorming()) return "Clear skies";
+  if (isBlizzard()) return "Blizzard";
+  if (isSnowstorm()) return "Snowing";
+  return "Stormy";
+}
+
+/** Action bar line while holding the almanac. */
+export function hudLine(player) {
+  const temp = temperatureText(player);
+  return temp ? `${seasonLine()} §7|§r ${temp}` : seasonLine();
 }
 
 export function isOperator(player) {
@@ -37,7 +65,9 @@ export async function showAlmanac(player) {
     .title("Season Almanac")
     .body(
       `${SEASON_COLORS[season]}§l${SEASON_NAMES[season]}§r\n` +
-        `Day ${dayOfSeason()} of ${seasonLength()} - Year ${currentYear()}\n\n${SEASON_BLURB[season]}`
+        `Day ${dayOfSeason()} of ${seasonLength()} - Year ${currentYear()}\n` +
+        (temperatureText(player) ? `Temperature here: ${temperatureText(player)}\n` : "") +
+        `${skyText()}\n\n${SEASON_BLURB[season]}`
     )
     .button("Close");
   const operator = isOperator(player);
@@ -66,6 +96,8 @@ export async function showSettings(player) {
     .toggle("Snowflakes, falling leaves and fog", { defaultValue: s.particles })
     .toggle("Announce new seasons", { defaultValue: s.announceSeasons })
     .toggle("Show season while holding the almanac", { defaultValue: s.showHud })
+    .toggle("Long summer days, short winter days", { defaultValue: s.realisticDayLength })
+    .toggle("Show temperature in Fahrenheit", { defaultValue: s.fahrenheit })
     .submitButton("Save");
   const response = await form.show(player);
   if (response.canceled || !response.formValues) return;
@@ -81,6 +113,8 @@ export async function showSettings(player) {
     particles: v[6],
     announceSeasons: v[7],
     showHud: v[8],
+    realisticDayLength: v[9],
+    fahrenheit: v[10],
   });
   setSeasonLength(next.seasonLengthDays);
   player.sendMessage(`§aSeason settings saved.§r Each season now lasts ${next.seasonLengthDays} days. It is ${seasonLine()}.`);

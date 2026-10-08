@@ -1,0 +1,16 @@
+{
+  "format_version": "1.16.100",
+  "minecraft:fog_settings": {
+    "description": {
+      "identifier": "seasons:blizzard"
+    },
+    "distance": {
+      "air": {
+        "fog_start": 2,
+        "fog_end": 28,
+        "fog_color": "#dfe6ec",
+        "render_distance_type": "fixed"
+      }
+    }
+  }
+}

@@ -26,6 +26,10 @@ const DEFAULTS = {
   announceSeasons: true,
   /** Show season and day on the action bar while holding the Season Almanac. */
   showHud: true,
+  /** Long summer days and short winter days, like real life (the 24-hour total stays the same). */
+  realisticDayLength: true,
+  /** Show temperatures in Fahrenheit instead of Celsius. */
+  fahrenheit: false,
 };
 
 let cached;

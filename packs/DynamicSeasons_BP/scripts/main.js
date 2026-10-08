@@ -2,9 +2,10 @@ import { ItemStack, system, world } from "@minecraft/server";
 import { registerBlockComponents } from "./blocks.js";
 import { advanceClock, currentSeason, loadClock, SEASON_COLORS, SEASON_NAMES, saveClock } from "./clock.js";
 import { registerCommands } from "./commands.js";
+import { tickDayLength } from "./daylight.js";
 import { forgetPlayer, tickColumn, tickEffects } from "./effects.js";
 import { getSettings } from "./settings.js";
-import { seasonLine, showAlmanac } from "./ui.js";
+import { hudLine, seasonLine, showAlmanac } from "./ui.js";
 import { loadWeather, onSeasonChanged, onVanillaWeatherChanged, tickWeather } from "./weather.js";
 
 const ALMANAC = "seasons:almanac";
@@ -65,6 +66,7 @@ system.run(() => {
 system.runInterval(() => {
   if (!ready) return;
   const tick = system.currentTick;
+  tickDayLength();
   advanceClock();
 
   const season = currentSeason();
@@ -78,7 +80,7 @@ system.runInterval(() => {
     tickWeather();
     if (getSettings().showHud) {
       for (const player of world.getAllPlayers()) {
-        if (holdingAlmanac(player)) player.onScreenDisplay.setActionBar(seasonLine());
+        if (holdingAlmanac(player)) player.onScreenDisplay.setActionBar(hudLine(player));
       }
     }
   }

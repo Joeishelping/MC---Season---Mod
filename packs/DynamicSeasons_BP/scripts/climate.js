@@ -1,4 +1,4 @@
-import { currentSeason, temperatureOffset } from "./clock.js";
+import { airTemperatureOffset, currentSeason, waterTemperatureOffset } from "./clock.js";
 import { getSettings } from "./settings.js";
 
 /** Vanilla's snow threshold: precipitation is snow below this temperature. */
@@ -77,11 +77,26 @@ export function isNaturallyCold(biome, y) {
   return baseTemperature(biome, y) < SNOW_TEMPERATURE;
 }
 
-/** Temperature with the season applied. Naturally cold places never get warmer. */
-export function seasonalTemperature(biome, y) {
-  const base = baseTemperature(biome, y);
-  const adjusted = base + temperatureOffset();
+function applyOffset(base, offset) {
+  const adjusted = base + offset;
+  // Naturally cold places (snowy biomes, mountain tops) never get warmer than vanilla.
   return base < SNOW_TEMPERATURE ? Math.min(base, adjusted) : adjusted;
+}
+
+/** Air temperature right now: season, weather front and time of day. */
+export function seasonalTemperature(biome, y) {
+  return applyOffset(baseTemperature(biome, y), airTemperatureOffset());
+}
+
+/** Water temperature: follows the seasons more slowly than the air. */
+export function waterTemperature(biome, y) {
+  return applyOffset(baseTemperature(biome, y), waterTemperatureOffset());
+}
+
+/** Minecraft temperature -> degrees Celsius (0 C is where snow starts). */
+export function toCelsius(t) {
+  const c = t < 1 ? (t - SNOW_TEMPERATURE) * 30 : 25.5 + (t - 1) * 12;
+  return Math.round(c);
 }
 
 /** Deserts/savannas/badlands high enough up, during winter. */
@@ -112,6 +127,16 @@ export function isSeasonallyFrozen(biome, y) {
 
 export function shouldThaw(biome, y) {
   return !isSeasonallyFrozen(biome, y);
+}
+
+/** Water freezes only where it would not freeze naturally, and only once the water is cold. */
+export function isWaterSeasonallyFrozen(biome, y) {
+  if (isNaturallyCold(biome, y) || isDryBiome(biome)) return false;
+  return waterTemperature(biome, y) < SNOW_TEMPERATURE;
+}
+
+export function shouldIceThaw(biome, y) {
+  return !isWaterSeasonallyFrozen(biome, y);
 }
 
 export function shouldWither(biome, y) {

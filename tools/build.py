@@ -17,7 +17,7 @@ BP = ROOT / "packs" / "DynamicSeasons_BP"
 RP = ROOT / "packs" / "DynamicSeasons_RP"
 DIST = ROOT / "dist"
 
-VERSION = [1, 0, 0]
+VERSION = [1, 1, 0]
 MIN_ENGINE = [1, 21, 130]
 BLOCK_FORMAT = "1.21.130"
 SERVER_MODULE = "2.4.0"
@@ -303,14 +303,15 @@ def particles():
                 "basic_render_parameters": {"material": "particles_alpha", "texture": "textures/particle/seasons_snowflake"},
             },
             "components": {
-                "minecraft:emitter_rate_steady": {"spawn_rate": 110, "max_particles": 600},
+                # variable.intensity: 0.25 light flurries .. 1.0 blizzard; variable.wind: sideways push
+                "minecraft:emitter_rate_steady": {"spawn_rate": "40 + 220 * variable.intensity", "max_particles": 1200},
                 "minecraft:emitter_lifetime_once": {"active_time": 0.55},
                 "minecraft:emitter_shape_box": {"half_dimensions": [16, 4, 16], "direction": [0, -1, 0]},
                 "minecraft:particle_initial_speed": 2.0,
                 "minecraft:particle_lifetime_expression": {"max_lifetime": 7},
                 "minecraft:particle_motion_dynamic": {
                     "linear_acceleration": [
-                        "math.sin(v.particle_age * 90 + v.particle_random_1 * 360) * 0.8",
+                        "variable.wind + math.sin(v.particle_age * 90 + v.particle_random_1 * 360) * 0.8",
                         -1.2,
                         "math.cos(v.particle_age * 70 + v.particle_random_2 * 360) * 0.8",
                     ],
@@ -361,6 +362,42 @@ def particles():
     })
 
 
+def fireflies():
+    write_json(RP / "particles" / "fireflies.json", {
+        "format_version": "1.10.0",
+        "particle_effect": {
+            "description": {
+                "identifier": "seasons:fireflies",
+                "basic_render_parameters": {"material": "particles_add", "texture": "textures/particle/seasons_firefly"},
+            },
+            "components": {
+                "minecraft:emitter_rate_instant": {"num_particles": 2},
+                "minecraft:emitter_lifetime_once": {"active_time": 0.1},
+                "minecraft:emitter_shape_box": {"half_dimensions": [12, 2.5, 12], "direction": "outwards"},
+                "minecraft:particle_initial_speed": 0.2,
+                "minecraft:particle_lifetime_expression": {"max_lifetime": "4 + v.particle_random_1 * 3"},
+                "minecraft:particle_motion_dynamic": {
+                    "linear_acceleration": [
+                        "math.sin(v.particle_age * 70 + v.particle_random_2 * 360) * 0.4",
+                        "math.sin(v.particle_age * 50 + v.particle_random_3 * 360) * 0.25",
+                        "math.cos(v.particle_age * 60 + v.particle_random_1 * 360) * 0.4",
+                    ],
+                    "linear_drag_coefficient": 1.5,
+                },
+                "minecraft:particle_appearance_billboard": {
+                    "size": [0.07, 0.07],
+                    "facing_camera_mode": "rotate_xyz",
+                    "uv": {"texture_width": 8, "texture_height": 8, "uv": [0, 0], "uv_size": [8, 8]},
+                },
+                # slow blink
+                "minecraft:particle_appearance_tinting": {
+                    "color": [0.85, 1.0, 0.35, "math.clamp(math.sin(v.particle_age * 120 + v.particle_random_2 * 360) * 1.5, 0, 1)"],
+                },
+            },
+        },
+    })
+
+
 def textures_and_text():
     snow = from_mask([
         "........",
@@ -384,6 +421,8 @@ def textures_and_text():
         "D.......",
     ], {"L": (255, 255, 255, 255), "D": (200, 200, 200, 255)})
     write_png(RP / "textures" / "particle" / "seasons_leaf.png", leaf)
+    glow = [[(255, 255, 255, max(0, 255 - int(((x - 3.5) ** 2 + (y - 3.5) ** 2) * 28))) for x in range(8)] for y in range(8)]
+    write_png(RP / "textures" / "particle" / "seasons_firefly.png", glow)
 
     # Pack icon: the four seasons as quadrants.
     colors = [(120, 200, 80, 255), (240, 200, 60, 255), (215, 110, 40, 255), (220, 235, 245, 255)]
@@ -396,15 +435,21 @@ def textures_and_text():
         "texture_name": "atlas.items",
         "texture_data": {"seasons_almanac": {"textures": "textures/items/book_normal"}},
     })
-    write_json(RP / "fogs" / "snowstorm.json", {
-        "format_version": "1.16.100",
-        "minecraft:fog_settings": {
-            "description": {"identifier": "seasons:snowstorm"},
-            "distance": {
-                "air": {"fog_start": 10, "fog_end": 72, "fog_color": "#c9d2db", "render_distance_type": "fixed"},
+    fogs = {
+        "snowstorm": (12, 80, "#c9d2db"),  # steady snow
+        "blizzard": (2, 28, "#dfe6ec"),  # white-out
+        "mist": (6, 56, "#d6dde2"),  # spring/fall morning mist
+    }
+    for name, (start, end, color) in fogs.items():
+        write_json(RP / "fogs" / f"{name}.json", {
+            "format_version": "1.16.100",
+            "minecraft:fog_settings": {
+                "description": {"identifier": f"seasons:{name}"},
+                "distance": {
+                    "air": {"fog_start": start, "fog_end": end, "fog_color": color, "render_distance_type": "fixed"},
+                },
             },
-        },
-    })
+        })
     write_json(RP / "blocks.json", {
         "format_version": "1.21.40",
         "seasons:seasonal_snow": {"sound": "snow"},
@@ -438,5 +483,6 @@ if __name__ == "__main__":
     items_and_recipes()
     geometry()
     particles()
+    fireflies()
     textures_and_text()
     package()

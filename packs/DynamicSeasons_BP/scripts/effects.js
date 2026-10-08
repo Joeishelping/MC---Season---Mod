@@ -1,9 +1,13 @@
 import { MolangVariableMap, world } from "@minecraft/server";
-import { currentSeason } from "./clock.js";
+import { currentSeason, currentTimeOfDay, isMistyDay } from "./clock.js";
 import {
   isNaturallyCold,
+  isDryBiome,
   isSeasonallyFrozen,
+  isWaterSeasonallyFrozen,
   precipitatesHere,
+  seasonalTemperature,
+  shouldIceThaw,
   shouldRevive,
   shouldThaw,
   shouldWither,
@@ -11,7 +15,7 @@ import {
 } from "./climate.js";
 import { LAYERS, meltSnow, REVIVES, revivePlant, SEASONAL_ICE, SEASONAL_SNOW, thawIce, WITHERS } from "./blocks.js";
 import { getSettings } from "./settings.js";
-import { isSnowstorm, isStorming } from "./weather.js";
+import { isBlizzard, isSnowstorm, isStorming, stormIntensity } from "./weather.js";
 
 /**
  * Everything that changes blocks happens around players (Bedrock only simulates chunks near
@@ -119,14 +123,14 @@ export function tickColumn(dimension, x, z, settings) {
   if (id === SEASONAL_SNOW) {
     if (shouldThaw(biome, y)) {
       meltSnow(top);
-    } else if (isStorming() && snowsHere(biome, y)) {
+    } else if (isStorming() && snowsHere(biome, y) && Math.random() < stormIntensity()) {
       const layers = Number(top.permutation.getState(LAYERS) ?? 1);
       if (layers < settings.maxSnowLayers) top.setPermutation(top.permutation.withState(LAYERS, layers + 1));
     }
     return;
   }
   if (id === SEASONAL_ICE) {
-    if (shouldThaw(biome, y)) thawIce(top);
+    if (shouldIceThaw(biome, y)) thawIce(top);
     return;
   }
   if (REVIVES[id]) {
@@ -139,12 +143,12 @@ export function tickColumn(dimension, x, z, settings) {
     return;
   }
 
-  if (settings.freezeWater && isSeasonallyFrozen(biome, y) && canFreeze(dimension, top)) {
+  if (settings.freezeWater && isWaterSeasonallyFrozen(biome, y) && canFreeze(dimension, top)) {
     top.setType(SEASONAL_ICE);
     return;
   }
 
-  if (isStorming() && canHoldSnow(top)) {
+  if (isStorming() && canHoldSnow(top) && Math.random() < stormIntensity()) {
     const above = top.above();
     if (above?.isAir && isSeasonallyFrozen(biome, above.y) && snowsHere(biome, above.y)) {
       above.setType(SEASONAL_SNOW);
@@ -209,17 +213,27 @@ function fallingLeaves(player, dimension) {
   }
 }
 
-const fogged = new Set();
+/** Which seasonal fog each player currently has ("" = none). */
+const activeFog = new Map();
 
-function setSnowFog(player, on) {
-  if (on === fogged.has(player.id)) return;
+function setFog(player, fogId) {
+  const current = activeFog.get(player.id) ?? "";
+  if (current === fogId) return;
   try {
-    player.runCommand(on ? "fog @s push seasons:snowstorm seasons_snowstorm" : "fog @s remove seasons_snowstorm");
-    if (on) fogged.add(player.id);
-    else fogged.delete(player.id);
+    if (current) player.runCommand("fog @s remove seasons_weather");
+    if (fogId) player.runCommand(`fog @s push ${fogId} seasons_weather`);
+    activeFog.set(player.id, fogId);
   } catch {
     // fog is cosmetic
   }
+}
+
+function isMorning(tod) {
+  return tod >= 22500 || tod < 2000;
+}
+
+function isNight(tod) {
+  return tod >= 13000 && tod < 22500;
 }
 
 function weatherVisuals(player, dimension, settings) {
@@ -227,23 +241,55 @@ function weatherVisuals(player, dimension, settings) {
   const top = topmost(dimension, Math.floor(loc.x), Math.floor(loc.z));
   const outdoors = !top || top.y < loc.y + 1;
   const biome = safeBiome(dimension, loc);
+  const season = currentSeason();
+  const tod = currentTimeOfDay();
   let snowing = false;
   if (outdoors && biome && isStorming() && precipitatesHere(biome, loc.y) && snowsHere(biome, loc.y)) {
     // In spring/fall storms vanilla already draws snow where it is naturally cold.
     snowing = isSnowstorm() || !isNaturallyCold(biome, loc.y);
   }
-  if (snowing && settings.particles) {
+  if (!settings.particles) {
+    setFog(player, "");
+    return;
+  }
+
+  if (snowing) {
+    const vars = new MolangVariableMap();
+    vars.setFloat("variable.intensity", stormIntensity());
+    vars.setFloat("variable.wind", isBlizzard() ? 3.5 : 0.6);
     try {
-      player.spawnParticle("seasons:snowfall", { x: loc.x, y: loc.y + 10, z: loc.z });
+      player.spawnParticle("seasons:snowfall", { x: loc.x, y: loc.y + 10, z: loc.z }, vars);
     } catch {
       // cosmetic
     }
   }
-  setSnowFog(player, snowing && settings.particles && isSnowstorm());
+
+  let fog = "";
+  if (snowing && isSnowstorm()) {
+    fog = isBlizzard() ? "seasons:blizzard" : "seasons:snowstorm";
+  } else if (
+    outdoors && biome && !isStorming() && !isDryBiome(biome) && (season === "spring" || season === "fall") &&
+    isMorning(tod) && isMistyDay()
+  ) {
+    fog = "seasons:mist";
+  }
+  setFog(player, fog);
+
+  // Fireflies on warm, clear summer nights.
+  if (
+    outdoors && biome && season === "summer" && !isStorming() && isNight(tod) && !isDryBiome(biome) &&
+    seasonalTemperature(biome, loc.y) > 0.45
+  ) {
+    try {
+      player.spawnParticle("seasons:fireflies", { x: loc.x, y: loc.y + 1, z: loc.z });
+    } catch {
+      // cosmetic
+    }
+  }
 }
 
 export function forgetPlayer(playerId) {
-  fogged.delete(playerId);
+  activeFog.delete(playerId);
 }
 
 /** Every tick. */
@@ -258,7 +304,7 @@ export function tickEffects(tick) {
       continue;
     }
     if (dimension.id !== "minecraft:overworld") {
-      setSnowFog(player, false);
+      setFog(player, "");
       continue;
     }
     const { x, z } = player.location;

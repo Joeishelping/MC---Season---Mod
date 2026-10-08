@@ -30,10 +30,14 @@ const TEMPERATURE_CURVE = [
   [4.0, -0.7],
 ];
 
+const SALT_KEY = "seasons:salt";
+
 let elapsed = 0;
 let lengthDays = 10;
 let lastClock;
 let dirty = false;
+let salt = 0;
+let timeOfDay = 0;
 
 function clockNow() {
   return world.getDay() * TICKS_PER_DAY + world.getTimeOfDay();
@@ -48,6 +52,10 @@ export function loadClock() {
     elapsed = rescale(elapsed, storedLength, configured);
   }
   lengthDays = configured;
+  const storedSalt = world.getDynamicProperty(SALT_KEY);
+  salt = typeof storedSalt === "number" ? storedSalt : Math.floor(Math.random() * 1e9);
+  world.setDynamicProperty(SALT_KEY, salt);
+  timeOfDay = world.getTimeOfDay();
   lastClock = clockNow();
   dirty = true;
   saveClock();
@@ -55,6 +63,7 @@ export function loadClock() {
 
 /** Call every tick. Returns true when the clock moved. */
 export function advanceClock() {
+  timeOfDay = world.getTimeOfDay();
   const now = clockNow();
   const delta = lastClock === undefined ? 0 : now - lastClock;
   lastClock = now;
@@ -130,14 +139,70 @@ export function setSeasonLength(newLength) {
   saveClock();
 }
 
-export function temperatureOffset() {
-  const pos = yearPosition();
+function curveAt(pos) {
+  const p = ((pos % 4) + 4) % 4;
   for (let i = 0; i < TEMPERATURE_CURVE.length - 1; i++) {
     const [ax, ay] = TEMPERATURE_CURVE[i];
     const [bx, by] = TEMPERATURE_CURVE[i + 1];
-    if (pos >= ax && pos <= bx) return ay + ((by - ay) * (pos - ax)) / (bx - ax);
+    if (p >= ax && p <= bx) return ay + ((by - ay) * (p - ax)) / (bx - ax);
   }
   return TEMPERATURE_CURVE[0][1];
+}
+
+/** The average seasonal temperature change for this point in the year. */
+export function temperatureOffset() {
+  return curveAt(yearPosition());
+}
+
+/** Deterministic pseudo-random value in [-1, 1] for a whole number (stable per world). */
+function noise(n) {
+  let h = (Math.imul(n | 0, 0x27d4eb2d) ^ salt) >>> 0;
+  h = Math.imul(h ^ (h >>> 15), 0x85ebca6b) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35) >>> 0;
+  return ((h ^ (h >>> 16)) >>> 0) / 0x7fffffff - 1;
+}
+
+/**
+ * Day-to-day weather fronts: some days are warmer or colder than normal for the season (a mild
+ * spell in winter, an early frost in fall). Changes smoothly from one day to the next.
+ */
+export function weatherAnomaly() {
+  const days = elapsed / TICKS_PER_DAY;
+  const day = Math.floor(days);
+  const t = days - day;
+  const smooth = (1 - Math.cos(Math.PI * t)) / 2;
+  return 0.12 * (noise(day) * (1 - smooth) + noise(day + 1) * smooth);
+}
+
+/** Warmest mid-afternoon, coldest just before dawn. */
+export function diurnalOffset() {
+  // Time 6000 is noon and 18000 midnight; peak warmth around 8000 (2 pm).
+  return 0.07 * Math.cos((2 * Math.PI * (timeOfDay - 8000)) / TICKS_PER_DAY);
+}
+
+/** Air temperature change right now: season + weather front + time of day. */
+export function airTemperatureOffset() {
+  return temperatureOffset() + weatherAnomaly() + diurnalOffset();
+}
+
+/**
+ * Lakes and rivers react slowly: water lags the air by about a quarter of a season, so ponds
+ * freeze over in mid-winter and stay frozen into early spring, like real life.
+ */
+export function waterTemperatureOffset() {
+  return curveAt(yearPosition() - 0.25) + weatherAnomaly() * 0.3;
+}
+
+/** Fraction of the 24-hour day that is daylight: about 2/3 at midsummer, 1/3 at midwinter. */
+export function daylightFraction() {
+  return 0.5 + (1 / 6) * Math.cos((2 * Math.PI * (yearPosition() - 1.5)) / 4);
+}
+
+export const currentTimeOfDay = () => timeOfDay;
+
+/** Roughly 3 in 5 spring and fall mornings are misty (stable per day). */
+export function isMistyDay() {
+  return noise(Math.floor(elapsed / TICKS_PER_DAY) + 7919) > -0.2;
 }
 
 /** How long storms last, relative to vanilla. */

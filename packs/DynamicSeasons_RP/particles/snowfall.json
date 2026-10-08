@@ -10,8 +10,8 @@
     },
     "components": {
       "minecraft:emitter_rate_steady": {
-        "spawn_rate": 110,
-        "max_particles": 600
+        "spawn_rate": "40 + 220 * variable.intensity",
+        "max_particles": 1200
       },
       "minecraft:emitter_lifetime_once": {
         "active_time": 0.55
@@ -34,7 +34,7 @@
       },
       "minecraft:particle_motion_dynamic": {
         "linear_acceleration": [
-          "math.sin(v.particle_age * 90 + v.particle_random_1 * 360) * 0.8",
+          "variable.wind + math.sin(v.particle_age * 90 + v.particle_random_1 * 360) * 0.8",
           -1.2,
           "math.cos(v.particle_age * 70 + v.particle_random_2 * 360) * 0.8"
         ],

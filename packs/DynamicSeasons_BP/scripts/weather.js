@@ -11,7 +11,7 @@ import { getSettings } from "./settings.js";
 const KEY = "seasons:weather";
 const MARGIN = 1200; // vanilla weather timer always outlasts ours so it never flips on its own
 
-let state = { storm: false, snowstorm: false, timer: 0 };
+let state = { storm: false, snowstorm: false, timer: 0, intensity: 0.6 };
 let ignoreEventsUntil = 0;
 
 const randomBetween = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
@@ -46,9 +46,20 @@ function applyStormWeather() {
   }
 }
 
+/**
+ * How strong a storm is, 0.25 (light flurries / drizzle) to 1 (blizzard / downpour).
+ * Winter storms are mostly light-to-moderate snow with the occasional blizzard.
+ */
+function rollIntensity() {
+  const r = Math.random();
+  if (currentSeason() === "winter") return r < 0.4 ? 0.35 : r < 0.8 ? 0.65 : 1.0;
+  return 0.4 + Math.random() * 0.6;
+}
+
 export function startStorm(length = rollStormLength()) {
   state.storm = true;
   state.timer = length;
+  state.intensity = rollIntensity();
   applyStormWeather();
   save();
 }
@@ -119,6 +130,7 @@ export function onVanillaWeatherChanged(event) {
   } else if (currentSeason() === "winter") {
     startStorm(); // turns it into a snowstorm
   } else {
+    state.intensity = rollIntensity();
     state.storm = true;
     state.snowstorm = false;
     state.timer = rollStormLength();
@@ -128,3 +140,5 @@ export function onVanillaWeatherChanged(event) {
 
 export const isStorming = () => state.storm;
 export const isSnowstorm = () => state.storm && state.snowstorm;
+export const stormIntensity = () => (Number.isFinite(state.intensity) ? state.intensity : 0.6);
+export const isBlizzard = () => isSnowstorm() && stormIntensity() >= 0.9;

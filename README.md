@@ -15,10 +15,17 @@ All four seasons are always the same length. Set the length with the **slider** 
 
 | Season | What happens |
 |---|---|
-| **Spring** | Heavy rain. Cooler biomes start snowy and switch to rain as it warms up. Snow and ice melt. Dead grass and flowers grow back exactly as they were. |
-| **Summer** | A mix of rain and sun, with thunderstorms more likely. Crops out in the sun near players grow faster. |
-| **Fall** | Gets colder. Leaves fall from trees, and late in fall grass and flowers die off. |
-| **Winter** | Snowstorms in every biome that could plausibly snow. Snow piles up (3 layers by default, up to 8) and exposed water freezes. Deserts, savannas and badlands stay dry unless you're above Y=160. |
+| **Spring** | Days get longer. Heavy rain and misty mornings. Cooler biomes start snowy and thaw as it warms up, with mountains and lakes thawing last. Dead grass and flowers grow back exactly as they were. |
+| **Summer** | Long days and short nights. A mix of rain and sun, afternoon thunderstorms, and fireflies on warm nights. Crops out in the sun grow faster. |
+| **Fall** | Days get shorter. Misty mornings, falling leaves, and first frosts at night, then grass and flowers die off. |
+| **Winter** | Short days and long nights. Snow anywhere that could plausibly get it, from light flurries to the occasional blizzard (white-out fog, sideways snow, fast pile-up). Snow piles up (3 layers by default, up to 8) and lakes freeze over. Deserts, savannas and badlands stay dry unless you're above Y=160. |
+
+### Like real life
+- **Day length changes with the season.** At midsummer the day lasts about 13 minutes and the night about 7; midwinter is the reverse. A full day is still 20 minutes. Toggle it in Settings.
+- **Temperature is never fixed.** It's warmest mid-afternoon and coldest before dawn, and random warm spells and cold snaps last a few days. Snow can melt during a mild spell in winter, and the first frost can come early in fall.
+- **Water lags behind the air.** Lakes and rivers freeze over in midwinter and stay frozen into early spring, after the snow has started melting.
+- **Higher means colder.** Mountains get snow earlier and keep it longer.
+- **Thermometer:** hold the Season Almanac to see the season and the temperature where you stand (°C, or °F in Settings).
 
 ## Why nothing breaks
 - **Seasonal snow and ice are the add-on's own blocks.** They look and work like the real ones, and they're the only snow and ice the add-on ever melts. Naturally generated snow, snow players place, and snowy biomes are never touched.
@@ -40,7 +47,7 @@ All four seasons are always the same length. Set the length with the **slider** 
 For testing: `/scriptevent seasons:simulate <x> <z> <radius> <columns>` fast-forwards the seasonal block changes around a spot, and `/scriptevent seasons:probe <x> <z>` shows what the add-on sees there.
 
 ## Bedrock limits
-- Bedrock decides rain vs. snow by biome, so winter snowstorms in warm biomes are drawn by the add-on. That means snowflake particles and snowstorm fog instead of vanilla rain.
+- Bedrock decides rain vs. snow by biome, so winter snowstorms in warm biomes are drawn by the add-on: snowflake particles and fog instead of vanilla rain. Mist and fireflies are particles and fog too.
 - Bedrock can't change grass or leaf colors while the game is running, so autumn shows as falling leaves instead of recolored trees.
 - Add-ons can't slow vanilla crop growth, so winter doesn't stop crops. Summer speeds them up.
 

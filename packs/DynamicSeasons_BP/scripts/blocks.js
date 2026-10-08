@@ -1,5 +1,5 @@
 import { GameMode, ItemStack } from "@minecraft/server";
-import { shouldRevive, shouldThaw } from "./climate.js";
+import { shouldIceThaw, shouldRevive, shouldThaw } from "./climate.js";
 
 export const SEASONAL_SNOW = "seasons:seasonal_snow";
 export const SEASONAL_ICE = "seasons:seasonal_ice";
@@ -85,7 +85,7 @@ export function registerBlockComponents(registry) {
   registry.registerCustomComponent("seasons:seasonal_snow", {
     onRandomTick({ block }) {
       const biome = biomeAt(block);
-      if (biome && shouldThaw(biome, block.y)) meltSnow(block);
+      if ((biome && shouldThaw(biome, block.y)) || block.below()?.isAir) meltSnow(block);
     },
     onPlayerBreak({ block, brokenBlockPermutation, player }) {
       // Same drops as vanilla snow: one snowball per layer, only with a shovel.
@@ -98,7 +98,7 @@ export function registerBlockComponents(registry) {
   registry.registerCustomComponent("seasons:seasonal_ice", {
     onRandomTick({ block }) {
       const biome = biomeAt(block);
-      if (biome && shouldThaw(biome, block.y)) thawIce(block);
+      if (biome && shouldIceThaw(biome, block.y)) thawIce(block);
     },
     onPlayerBreak({ block }) {
       // Breaking seasonal ice always leaves the original water behind.
