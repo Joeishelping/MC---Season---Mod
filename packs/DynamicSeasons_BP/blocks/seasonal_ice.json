@@ -1,0 +1,31 @@
+{
+  "format_version": "1.21.130",
+  "minecraft:block": {
+    "description": {
+      "identifier": "seasons:seasonal_ice",
+      "menu_category": {
+        "category": "none"
+      }
+    },
+    "components": {
+      "minecraft:geometry": "geometry.seasons_full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "ice",
+          "render_method": "blend"
+        }
+      },
+      "minecraft:friction": 0.02,
+      "minecraft:light_dampening": 2,
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 0.5
+      },
+      "minecraft:destructible_by_explosion": {
+        "explosion_resistance": 0.5
+      },
+      "minecraft:map_color": "#a0a0ff",
+      "minecraft:loot": "loot_tables/empty.json",
+      "seasons:seasonal_ice": {}
+    }
+  }
+}

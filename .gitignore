@@ -1,6 +1,2 @@
-.gradle/
-build/
-out/
-run/
-*.iml
-.idea/
+node_modules/
+*.log

@@ -1,0 +1,18 @@
+## Dynamic Seasons
+item.seasons:almanac=Season Almanac
+tile.seasons:seasonal_snow.name=Snow
+tile.seasons:seasonal_ice.name=Ice
+tile.seasons:withered_short_grass.name=Withered Grass
+tile.seasons:withered_fern.name=Withered Fern
+tile.seasons:withered_dandelion.name=Withered Dandelion
+tile.seasons:withered_poppy.name=Withered Poppy
+tile.seasons:withered_blue_orchid.name=Withered Blue Orchid
+tile.seasons:withered_allium.name=Withered Allium
+tile.seasons:withered_azure_bluet.name=Withered Azure Bluet
+tile.seasons:withered_red_tulip.name=Withered Red Tulip
+tile.seasons:withered_orange_tulip.name=Withered Orange Tulip
+tile.seasons:withered_white_tulip.name=Withered White Tulip
+tile.seasons:withered_pink_tulip.name=Withered Pink Tulip
+tile.seasons:withered_oxeye_daisy.name=Withered Oxeye Daisy
+tile.seasons:withered_cornflower.name=Withered Cornflower
+tile.seasons:withered_lily_of_the_valley.name=Withered Lily of the Valley

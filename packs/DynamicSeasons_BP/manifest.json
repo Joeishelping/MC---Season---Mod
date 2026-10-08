@@ -1,0 +1,58 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Dynamic Seasons",
+    "description": "Spring, Summer, Fall and Winter. Seasonal weather, snow that piles up and melts away, plants that die off and come back exactly as they were.",
+    "uuid": "fa393e97-7c91-446a-bd4b-be4c0cebca96",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      130
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "b8d03deb-346c-4021-aed7-391cc5438ce7",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "6c4934d2-5f14-4119-82fc-7c8c120e9d90",
+      "version": [
+        1,
+        0,
+        0
+      ],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.4.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.0.0"
+    },
+    {
+      "uuid": "2691c437-4feb-4949-9d9f-98b1404ba58f",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

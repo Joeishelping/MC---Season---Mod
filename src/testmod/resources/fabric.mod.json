@@ -1,9 +1,0 @@
-{
-  "schemaVersion": 1,
-  "id": "dynamic_seasons_testmod",
-  "version": "1.0.0",
-  "name": "Dynamic Seasons Dev Test Hooks",
-  "environment": "*",
-  "entrypoints": { "main": ["com.dynamicseasons.test.SeasonTestMod"] },
-  "depends": { "dynamic_seasons": "*" }
-}

@@ -1,0 +1,9 @@
+{
+  "resource_pack_name": "dynamic_seasons",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "seasons_almanac": {
+      "textures": "textures/items/book_normal"
+    }
+  }
+}

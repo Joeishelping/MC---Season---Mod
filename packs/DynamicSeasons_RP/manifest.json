@@ -1,0 +1,39 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Dynamic Seasons Resources",
+    "description": "Spring, Summer, Fall and Winter. Seasonal weather, snow that piles up and melts away, plants that die off and come back exactly as they were.",
+    "uuid": "2691c437-4feb-4949-9d9f-98b1404ba58f",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      130
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "537376b6-6f7f-43f4-9473-9156f4c5c9a3",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "fa393e97-7c91-446a-bd4b-be4c0cebca96",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

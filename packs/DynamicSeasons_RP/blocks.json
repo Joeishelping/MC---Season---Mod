@@ -1,0 +1,51 @@
+{
+  "format_version": "1.21.40",
+  "seasons:seasonal_snow": {
+    "sound": "snow"
+  },
+  "seasons:seasonal_ice": {
+    "sound": "glass"
+  },
+  "seasons:withered_short_grass": {
+    "sound": "grass"
+  },
+  "seasons:withered_fern": {
+    "sound": "grass"
+  },
+  "seasons:withered_dandelion": {
+    "sound": "grass"
+  },
+  "seasons:withered_poppy": {
+    "sound": "grass"
+  },
+  "seasons:withered_blue_orchid": {
+    "sound": "grass"
+  },
+  "seasons:withered_allium": {
+    "sound": "grass"
+  },
+  "seasons:withered_azure_bluet": {
+    "sound": "grass"
+  },
+  "seasons:withered_red_tulip": {
+    "sound": "grass"
+  },
+  "seasons:withered_orange_tulip": {
+    "sound": "grass"
+  },
+  "seasons:withered_white_tulip": {
+    "sound": "grass"
+  },
+  "seasons:withered_pink_tulip": {
+    "sound": "grass"
+  },
+  "seasons:withered_oxeye_daisy": {
+    "sound": "grass"
+  },
+  "seasons:withered_cornflower": {
+    "sound": "grass"
+  },
+  "seasons:withered_lily_of_the_valley": {
+    "sound": "grass"
+  }
+}
