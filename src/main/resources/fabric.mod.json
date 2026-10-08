@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "dynamic_seasons",
+  "version": "${version}",
+  "name": "Dynamic Seasons",
+  "description": "Spring, Summer, Fall and Winter. Seasonal weather, snow that piles up and melts away, plants that die off and come back exactly as they were, autumn colors and seasonal crop growth. Everything the seasons change reverts on its own.",
+  "authors": ["Dynamic Seasons contributors"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.dynamicseasons.DynamicSeasons"],
+    "client": ["com.dynamicseasons.client.DynamicSeasonsClient"],
+    "modmenu": ["com.dynamicseasons.client.ModMenuIntegration"]
+  },
+  "mixins": [
+    "dynamic_seasons.mixins.json",
+    {
+      "config": "dynamic_seasons.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}

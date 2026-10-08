@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "com.dynamicseasons.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BiomeAccessor",
+    "BiomeMixin",
+    "FarmlandBlockMixin",
+    "ServerWorldMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

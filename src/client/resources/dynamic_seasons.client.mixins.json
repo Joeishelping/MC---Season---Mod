@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.dynamicseasons.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "BiomeColorMixin",
+    "WorldRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

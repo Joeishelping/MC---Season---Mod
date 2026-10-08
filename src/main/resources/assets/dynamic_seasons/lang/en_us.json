@@ -1,0 +1,34 @@
+{
+  "block.dynamic_seasons.seasonal_snow": "Snow",
+  "block.dynamic_seasons.seasonal_ice": "Ice",
+  "block.dynamic_seasons.withered_plant": "Withered Plant",
+
+  "season.dynamic_seasons.spring": "Spring",
+  "season.dynamic_seasons.summer": "Summer",
+  "season.dynamic_seasons.fall": "Fall",
+  "season.dynamic_seasons.winter": "Winter",
+
+  "message.dynamic_seasons.season_start": "%s has begun.",
+  "hud.dynamic_seasons.season": "%s - Day %s/%s",
+
+  "commands.dynamic_seasons.info": "It is %s, day %s of %s (year %s).",
+  "commands.dynamic_seasons.set": "Season set to %s, day %s.",
+  "commands.dynamic_seasons.length.query": "Each season lasts %s days.",
+  "commands.dynamic_seasons.length.set": "Each season now lasts %s days.",
+
+  "config.dynamic_seasons.title": "Dynamic Seasons",
+  "config.dynamic_seasons.note": "All four seasons are always the same length.",
+  "config.dynamic_seasons.server_note": "Gameplay settings are controlled by the server.",
+  "config.dynamic_seasons.season_length": "Season Length: %s MC days",
+  "config.dynamic_seasons.snow_layers": "Max Snow Depth: %s",
+  "config.dynamic_seasons.weather": "Seasonal Weather",
+  "config.dynamic_seasons.freeze_water": "Freeze Water",
+  "config.dynamic_seasons.wither_plants": "Plants Die Off",
+  "config.dynamic_seasons.crop_growth": "Seasonal Crops",
+  "config.dynamic_seasons.announce": "Announce Seasons",
+  "config.dynamic_seasons.colors": "Seasonal Colors",
+  "config.dynamic_seasons.hud": "Season HUD",
+
+  "key.categories.dynamic_seasons": "Dynamic Seasons",
+  "key.dynamic_seasons.config": "Open Seasons Config"
+}
