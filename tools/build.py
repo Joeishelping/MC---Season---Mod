@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates the repetitive pack JSON/PNG files and packages dist/DynamicSeasons.mcaddon.
+"""Generates the repetitive pack JSON/PNG files and packages dist/TrueSeasons.mcaddon.
 
 Hand-written files (scripts, README) live in packs/ directly; everything this script writes is
 regenerated on every run, so edit this script rather than the generated files.
@@ -13,11 +13,11 @@ import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-BP = ROOT / "packs" / "DynamicSeasons_BP"
-RP = ROOT / "packs" / "DynamicSeasons_RP"
+BP = ROOT / "packs" / "TrueSeasons_BP"
+RP = ROOT / "packs" / "TrueSeasons_RP"
 DIST = ROOT / "dist"
 
-VERSION = [1, 1, 0]
+VERSION = [1, 1, 1]
 MIN_ENGINE = [1, 21, 130]
 BLOCK_FORMAT = "1.21.130"
 SERVER_MODULE = "2.4.0"
@@ -91,7 +91,7 @@ def manifests():
     write_json(BP / "manifest.json", {
         "format_version": 2,
         "header": {
-            "name": "Dynamic Seasons",
+            "name": "True Seasons",
             "description": DESCRIPTION,
             "uuid": BP_HEADER_UUID,
             "version": VERSION,
@@ -111,7 +111,7 @@ def manifests():
     write_json(RP / "manifest.json", {
         "format_version": 2,
         "header": {
-            "name": "Dynamic Seasons Resources",
+            "name": "True Seasons Resources",
             "description": DESCRIPTION,
             "uuid": RP_HEADER_UUID,
             "version": VERSION,
@@ -431,7 +431,7 @@ def textures_and_text():
     write_png(RP / "pack_icon.png", icon)
 
     write_json(RP / "textures" / "item_texture.json", {
-        "resource_pack_name": "dynamic_seasons",
+        "resource_pack_name": "true_seasons",
         "texture_name": "atlas.items",
         "texture_data": {"seasons_almanac": {"textures": "textures/items/book_normal"}},
     })
@@ -456,7 +456,7 @@ def textures_and_text():
         "seasons:seasonal_ice": {"sound": "glass"},
         **{f"seasons:withered_{p}": {"sound": "grass"} for p in PLANTS},
     })
-    lang = ["## Dynamic Seasons", "item.seasons:almanac=Season Almanac",
+    lang = ["## True Seasons", "item.seasons:almanac=Season Almanac",
             "tile.seasons:seasonal_snow.name=Snow", "tile.seasons:seasonal_ice.name=Ice"]
     lang += [f"tile.seasons:withered_{p}.name=Withered {name}" for p, (name, _) in PLANTS.items()]
     (RP / "texts").mkdir(parents=True, exist_ok=True)
@@ -466,7 +466,7 @@ def textures_and_text():
 
 def package():
     DIST.mkdir(exist_ok=True)
-    target = DIST / "DynamicSeasons.mcaddon"
+    target = DIST / "TrueSeasons.mcaddon"
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as zf:
         for pack in (BP, RP):
             for path in sorted(pack.rglob("*")):

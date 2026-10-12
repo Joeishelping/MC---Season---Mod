@@ -60,7 +60,7 @@ system.run(() => {
   loadWeather();
   lastSeason = currentSeason();
   ready = true;
-  console.info(`[Dynamic Seasons] ${seasonLine()}`);
+  console.info(`[True Seasons] ${seasonLine()}`);
 });
 
 system.runInterval(() => {
@@ -117,7 +117,7 @@ system.afterEvents.scriptEventReceive.subscribe(({ id, message, sourceEntity }) 
   if (id !== "seasons:simulate") return;
   const [x, z, radius, columns] = message.trim().split(/\s+/).map(Number);
   if (![x, z, radius, columns].every(Number.isFinite)) {
-    console.warn("[Dynamic Seasons] usage: /scriptevent seasons:simulate <x> <z> <radius> <columns>");
+    console.warn("[True Seasons] usage: /scriptevent seasons:simulate <x> <z> <radius> <columns>");
     return;
   }
   const dimension = sourceEntity?.dimension ?? world.getDimension("overworld");
@@ -127,7 +127,7 @@ system.afterEvents.scriptEventReceive.subscribe(({ id, message, sourceEntity }) 
     const cz = Math.floor(z + (Math.random() * 2 - 1) * radius);
     tickColumn(dimension, cx, cz, settings);
   }
-  console.info(`[Dynamic Seasons] simulated ${columns} columns around ${x} ${z}`);
+  console.info(`[True Seasons] simulated ${columns} columns around ${x} ${z}`);
 });
 
 /** /scriptevent seasons:probe <x> <z> - logs what the add-on sees at a column (operators/debug). */
@@ -138,9 +138,9 @@ function probe(message, sourceEntity) {
     const top = dimension.getTopmostBlock({ x, z });
     const biome = top ? dimension.getBiome(top.location) : undefined;
     console.info(
-      `[Dynamic Seasons] probe ${x} ${z}: top=${top?.typeId}@${top?.y} above=${top?.above()?.typeId} biome=${biome?.id}`
+      `[True Seasons] probe ${x} ${z}: top=${top?.typeId}@${top?.y} above=${top?.above()?.typeId} biome=${biome?.id}`
     );
   } catch (e) {
-    console.warn(`[Dynamic Seasons] probe failed: ${e}`);
+    console.warn(`[True Seasons] probe failed: ${e}`);
   }
 }

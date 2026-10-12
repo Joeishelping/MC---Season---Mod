@@ -83,7 +83,7 @@ export async function showSettings(player) {
   }
   const s = getSettings();
   const form = new ModalFormData()
-    .title("Dynamic Seasons")
+    .title("True Seasons")
     .slider("Season length (MC days) - all four seasons are equal", MIN_SEASON_LENGTH, MAX_SEASON_LENGTH, {
       defaultValue: s.seasonLengthDays,
       valueStep: 1,

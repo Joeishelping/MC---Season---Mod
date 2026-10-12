@@ -1,10 +1,10 @@
-# Dynamic Seasons (Minecraft Bedrock add-on)
+# True Seasons (Minecraft Bedrock add-on)
 
 Spring, Summer, Fall and Winter for Minecraft Bedrock Edition. Everything the seasons change goes back to normal on its own.
 
 ## Install
-1. Download **[`dist/DynamicSeasons.mcaddon`](dist/DynamicSeasons.mcaddon)** and open it. Minecraft imports both packs.
-2. In your world's settings, under **Behavior Packs**, activate **Dynamic Seasons**. The resource pack is added automatically.
+1. Download **[`dist/TrueSeasons.mcaddon`](dist/TrueSeasons.mcaddon)** and open it. Minecraft imports both packs.
+2. In your world's settings, under **Behavior Packs**, activate **True Seasons**. The resource pack is added automatically.
 3. Requires Minecraft Bedrock **1.21.130 or newer**. No experimental toggles needed.
 
 Every player gets a **Season Almanac** the first time they join. It can also be crafted from a book and a clock.
@@ -52,5 +52,5 @@ For testing: `/scriptevent seasons:simulate <x> <z> <radius> <columns>` fast-for
 - Add-ons can't slow vanilla crop growth, so winter doesn't stop crops. Summer speeds them up.
 
 ## Development
-`packs/DynamicSeasons_BP` contains the behavior pack (scripts in `scripts/`). `packs/DynamicSeasons_RP` contains the resource pack.
-`python3 tools/build.py` regenerates the block, model, particle and manifest files and rebuilds `dist/DynamicSeasons.mcaddon`.
+`packs/TrueSeasons_BP` contains the behavior pack (scripts in `scripts/`). `packs/TrueSeasons_RP` contains the resource pack.
+`python3 tools/build.py` regenerates the block, model, particle and manifest files and rebuilds `dist/TrueSeasons.mcaddon`.

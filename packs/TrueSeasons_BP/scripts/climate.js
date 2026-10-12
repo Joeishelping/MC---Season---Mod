@@ -50,7 +50,7 @@ function biomeTemperature(biome) {
   if (known !== undefined) return known;
   if (!unknownBiomes.has(id)) {
     unknownBiomes.add(id);
-    console.warn(`[Dynamic Seasons] Unknown biome '${id}', using tags to guess its climate.`);
+    console.warn(`[True Seasons] Unknown biome '${id}', using tags to guess its climate.`);
   }
   try {
     if (biome.hasTags(["frozen"]) || biome.hasTags(["ice"])) return 0.0;

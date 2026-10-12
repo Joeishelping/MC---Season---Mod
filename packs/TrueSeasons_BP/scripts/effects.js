@@ -314,7 +314,7 @@ export function tickEffects(tick) {
       try {
         tickColumn(dimension, cx, cz, settings);
       } catch (e) {
-        console.warn(`[Dynamic Seasons] column tick failed: ${e}`);
+        console.warn(`[True Seasons] column tick failed: ${e}`);
       }
     }
     if (tick % 10 === 0) weatherVisuals(player, dimension, settings);

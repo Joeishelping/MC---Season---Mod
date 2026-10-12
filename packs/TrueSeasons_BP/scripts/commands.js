@@ -60,7 +60,7 @@ export function registerCommands(registry, onSeasonForced) {
   registry.registerCommand(
     {
       name: "seasons:seasonconfig",
-      description: "Open the Dynamic Seasons settings",
+      description: "Open the True Seasons settings",
       permissionLevel: CommandPermissionLevel.GameDirectors,
     },
     (origin) => {

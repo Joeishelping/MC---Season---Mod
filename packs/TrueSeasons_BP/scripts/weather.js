@@ -31,7 +31,7 @@ function setVanillaWeather(type, duration) {
   try {
     overworld().setWeather(type, Math.max(20, Math.floor(duration)));
   } catch (e) {
-    console.warn(`[Dynamic Seasons] Could not set weather: ${e}`);
+    console.warn(`[True Seasons] Could not set weather: ${e}`);
   }
 }
 

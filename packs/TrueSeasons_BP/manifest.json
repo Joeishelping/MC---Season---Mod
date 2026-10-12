@@ -1,13 +1,13 @@
 {
   "format_version": 2,
   "header": {
-    "name": "Dynamic Seasons",
+    "name": "True Seasons",
     "description": "Spring, Summer, Fall and Winter. Seasonal weather, snow that piles up and melts away, plants that die off and come back exactly as they were.",
     "uuid": "fa393e97-7c91-446a-bd4b-be4c0cebca96",
     "version": [
       1,
       1,
-      0
+      1
     ],
     "min_engine_version": [
       1,
@@ -22,7 +22,7 @@
       "version": [
         1,
         1,
-        0
+        1
       ]
     },
     {
@@ -32,7 +32,7 @@
       "version": [
         1,
         1,
-        0
+        1
       ],
       "entry": "scripts/main.js"
     }
@@ -51,7 +51,7 @@
       "version": [
         1,
         1,
-        0
+        1
       ]
     }
   ]
