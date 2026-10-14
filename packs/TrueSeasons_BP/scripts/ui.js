@@ -15,10 +15,10 @@ import { isBlizzard, isSnowstorm, isStorming } from "./weather.js";
 import { DEFAULT_CLEANUP_RADIUS, runCleanup } from "./cleanup.js";
 
 const SEASON_BLURB = {
-  spring: "Days are getting longer. Heavy rain and misty mornings. Cool places start snowy and thaw as it warms; lakes are the last to melt. Snow melts and plants come back.",
+  spring: "Days are getting longer. Heavy rain and misty mornings. All the winter snow melts away and plants come back.",
   summer: "Long days and short nights. Rain and sunshine, afternoon thunderstorms, fireflies at night. Crops in the sun grow faster.",
   fall: "Days are getting shorter. Misty mornings and falling leaves; the first frosts come at night, then grass and flowers die off.",
-  winter: "Short days and long nights. Snow anywhere it can snow - from light flurries to blizzards. It piles up, and lakes freeze over. Mild spells can melt it for a while.",
+  winter: "Short days and long nights. Snow anywhere it can snow - from light flurries to blizzards. It piles up on the ground and melts away when spring comes.",
 };
 
 export function seasonLine() {
@@ -81,20 +81,28 @@ export async function showAlmanac(player) {
 
 /** Removes all seasonal snow & ice and revives plants around every player, reporting back. */
 export function startCleanup(player, radius = DEFAULT_CLEANUP_RADIUS) {
-  const started = runCleanup(radius, (restored) => {
-    const msg = `§aSeason clean-up done:§r restored ${restored} block(s) within ${radius} blocks of every player.`;
+  const tell = (msg) => {
     try {
       player?.sendMessage(msg);
     } catch {
       world.sendMessage(msg);
     }
-  });
-  const note = started ? "§eCleaning up seasonal snow and ice...§r" : "§eA clean-up is already running.§r";
-  try {
-    player?.sendMessage(note);
-  } catch {
-    // console / command block
-  }
+  };
+  const started = runCleanup(
+    radius,
+    (restored, chunks) =>
+      tell(
+        `§aSeason clean-up done:§r restored ${restored} block(s) in ${chunks} loaded chunk(s). ` +
+          "§7Places nobody is near get cleaned as soon as someone goes there.§r"
+      ),
+    undefined,
+    (percent, restored) => tell(`§7Season clean-up ${percent}% done (${restored} restored so far)...§r`)
+  );
+  tell(
+    started
+      ? `§eCleaning up all seasonal snow within ${radius} blocks of every player...§r`
+      : "§eA clean-up is already running.§r"
+  );
   return started;
 }
 
@@ -112,7 +120,6 @@ export async function showSettings(player) {
     })
     .slider("Max snow depth (layers)", 1, 8, { defaultValue: s.maxSnowLayers, valueStep: 1 })
     .toggle("Seasonal weather", { defaultValue: s.seasonalWeather })
-    .toggle("Water freezes in winter", { defaultValue: s.freezeWater })
     .toggle("Plants die off in the cold", { defaultValue: s.witherPlants })
     .toggle("Crops grow faster in summer", { defaultValue: s.cropGrowth })
     .toggle("Snowflakes, falling leaves and fog", { defaultValue: s.particles })
@@ -130,15 +137,14 @@ export async function showSettings(player) {
     seasonLengthDays: v[0],
     maxSnowLayers: v[1],
     seasonalWeather: v[2],
-    freezeWater: v[3],
-    witherPlants: v[4],
-    cropGrowth: v[5],
-    particles: v[6],
-    announceSeasons: v[7],
-    showHud: v[8],
-    snowOnGround: v[9],
-    realisticDayLength: v[10],
-    fahrenheit: v[11],
+    witherPlants: v[3],
+    cropGrowth: v[4],
+    particles: v[5],
+    announceSeasons: v[6],
+    showHud: v[7],
+    snowOnGround: v[8],
+    realisticDayLength: v[9],
+    fahrenheit: v[10],
   });
   setSeasonLength(next.seasonLengthDays);
   player.sendMessage(`§aSeason settings saved.§r Each season now lasts ${next.seasonLengthDays} days. It is ${seasonLine()}.`);

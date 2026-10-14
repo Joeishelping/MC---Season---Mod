@@ -2,7 +2,7 @@ import { CommandPermissionLevel, CustomCommandParamType, CustomCommandStatus, sy
 import { SEASONS, SEASON_NAMES, seasonLength, setSeason, setSeasonLength, currentYear } from "./clock.js";
 import { getSettings, MAX_SEASON_LENGTH, MIN_SEASON_LENGTH, saveSettings } from "./settings.js";
 import { seasonLine, showSettings, startCleanup } from "./ui.js";
-import { DEFAULT_CLEANUP_RADIUS, runCleanup } from "./cleanup.js";
+import { DEFAULT_CLEANUP_RADIUS, MAX_CLEANUP_RADIUS, runCleanup } from "./cleanup.js";
 import { endStorm, startStorm } from "./weather.js";
 
 /**
@@ -11,7 +11,7 @@ import { endStorm, startStorm } from "./weather.js";
  * /seasons:seasonlength <days>         - change how long every season lasts (operators)
  * /seasons:seasonconfig                - open the settings menu (operators)
  * /seasons:storm <start|stop>          - start or stop a storm right now (operators)
- * /seasons:cleanup [radius]            - remove ALL seasonal snow/ice, revive plants (operators)
+ * /seasons:cleanup [radius]            - remove ALL seasonal snow/ice, revive plants in loaded chunks (operators)
  */
 export function registerCommands(registry, onSeasonForced) {
   registry.registerEnum("seasons:season", SEASONS);
@@ -85,11 +85,11 @@ export function registerCommands(registry, onSeasonForced) {
     },
     (origin, radius) => {
       const player = origin.sourceEntity?.typeId === "minecraft:player" ? origin.sourceEntity : undefined;
-      const r = Math.max(8, Math.min(256, radius ?? DEFAULT_CLEANUP_RADIUS));
+      const r = Math.max(16, Math.min(MAX_CLEANUP_RADIUS, radius ?? DEFAULT_CLEANUP_RADIUS));
       system.run(() => {
         if (!player) {
           // console / command block: report in the log
-          runCleanup(r, (n) => console.info(`[True Seasons] clean-up restored ${n} block(s)`));
+          runCleanup(r, (n, chunks) => console.info(`[True Seasons] clean-up restored ${n} block(s) in ${chunks} loaded chunk(s)`));
         } else {
           startCleanup(player, r);
         }

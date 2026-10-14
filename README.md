@@ -15,21 +15,20 @@ All four seasons are always the same length. Set the length with the **slider** 
 
 | Season | What happens |
 |---|---|
-| **Spring** | Days get longer. Heavy rain and misty mornings. Cooler biomes start snowy and thaw as it warms up, with mountains and lakes thawing last. Dead grass and flowers grow back exactly as they were. |
+| **Spring** | Days get longer. Heavy rain and misty mornings. All the winter snow melts away on the first day of spring. Dead grass and flowers grow back exactly as they were. |
 | **Summer** | Long days and short nights. A mix of rain and sun, afternoon thunderstorms, and fireflies on warm nights. Crops out in the sun grow faster. |
 | **Fall** | Days get shorter. Misty mornings, falling leaves, and first frosts at night, then grass and flowers die off. |
-| **Winter** | Short days and long nights. Snow anywhere that could plausibly get it, from light flurries to the occasional blizzard (white-out fog, sideways snow, fast pile-up). Snow piles up (3 layers by default, up to 8) and lakes freeze over. Deserts, savannas and badlands stay dry unless you're above Y=160. |
+| **Winter** | Short days and long nights. Snow anywhere that could plausibly get it, from light flurries to the occasional blizzard (white-out fog, sideways snow, fast pile-up). Snow piles up (3 layers by default, up to 8). Water never freezes. Deserts, savannas and badlands stay dry unless you're above Y=160. |
 
 ### Like real life
 - **Day length changes with the season.** At midsummer the day lasts about 13 minutes and the night about 7; midwinter is the reverse. A full day is still 20 minutes. Toggle it in Settings.
 - **Temperature is never fixed.** It's warmest mid-afternoon and coldest before dawn, and random warm spells and cold snaps last a few days. Snow can melt during a mild spell in winter, and the first frost can come early in fall.
-- **Water lags behind the air.** Lakes and rivers freeze over in midwinter and stay frozen into early spring, after the snow has started melting.
 - **Higher means colder.** Mountains get snow earlier and keep it longer.
 - **Thermometer:** hold the Season Almanac to see the season and the temperature where you stand (°C, or °F in Settings).
 
 ## Why nothing breaks
 - **Seasonal snow and ice are the add-on's own blocks.** They look and work like the real ones, and they're the only snow and ice the add-on ever melts. Naturally generated snow, snow players place, and snowy biomes are never touched.
-- **Frozen water turns back into the exact water source it was**, whether it thaws or gets mined. Water near farmland never freezes, so farmland can't dry out.
+- **Water is never frozen.** Ice left by older versions turns back into the exact water it was.
 - **A dead plant remembers what it was.** Each type of grass or flower has its own withered block. It grows back into the same plant in spring, and if it's broken while dead, it drops the original plant's items.
 - **Snow only settles on natural ground** (grass, dirt, stone, sand, leaves, logs...), never on slabs, chests or farmland. Under trees it settles on the leaves, not the ground beneath.
 - **Places nobody visits catch up later.** Bedrock only runs chunks near players, so snow, ice and plants revert as soon as someone comes back.
@@ -43,14 +42,16 @@ All four seasons are always the same length. Set the length with the **slider** 
 | `/seasons:seasonlength <days>` | operators |
 | `/seasons:seasonconfig` | operators: opens the settings menu |
 | `/seasons:storm <start\|stop>` | operators |
-| `/seasons:cleanup [radius]` | operators: removes **all** seasonal snow and ice and brings every dead plant back, within 128 blocks (or the radius you give, up to 256) of every player |
+| `/seasons:cleanup [radius]` | operators: removes **all** seasonal snow and brings every dead plant back, in loaded chunks within 256 blocks (or the radius you give, up to 1024) of every player |
 
 For testing: `/scriptevent seasons:simulate <x> <z> <radius> <columns>` fast-forwards the seasonal block changes around a spot, and `/scriptevent seasons:probe <x> <z>` shows what the add-on sees there.
 
 ## Cleaning up snow
-- **Melting is fast.** Snow disappears in one go once it's warm enough, not layer by layer. A background sweep checks every column within 64 blocks of each player about every 9 seconds, so thawed snow, ice and dead plants near you clear within seconds.
-- **Clean up everything now:** operators can use the **"Clean up all seasonal snow now"** button in the Season Almanac, or `/seasons:cleanup`. It removes all seasonal snow and ice and revives all plants around every player, whatever the season, in a few seconds.
-- **No snow at all:** turn off **"Snow settles and piles up"** in Settings. It still snows, but nothing stays, and any seasonal snow left anywhere is removed as players come near it.
+- **Snow never outlasts winter.** Seasonal snow only settles in late fall and winter. On the first day of spring all of it melts, wherever it is and however cold it is.
+- **Melting is fast.** A background sweep checks every column within 96 blocks of each player about every 10 seconds. Snow melts in one go, so the ground clears within seconds.
+- **Clean up everything now:** operators can use the **"Clean up all seasonal snow now"** button in the Season Almanac, or `/seasons:cleanup [radius]`. It removes all seasonal snow (and old ice) and revives all plants in every loaded chunk within 256 blocks of every player (up to 1024), in any season. In testing, a 420-block clean-up took 7 seconds.
+- **No snow at all:** turn off **"Snow settles and piles up"** in Settings. It still snows, but nothing stays, and leftover seasonal snow is removed wherever players go.
+- **Far-away places:** Bedrock only keeps the area around players loaded, and loading unexplored land would generate new terrain, so the clean-up skips unloaded chunks. Snow there disappears as soon as someone comes near it (in spring, or with snow turned off).
 - Clean-up only ever touches the add-on's own snow, ice and dead plants. Natural snow and snow players place are never removed.
 
 ## Bedrock limits

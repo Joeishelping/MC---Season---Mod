@@ -1,10 +1,10 @@
 import { MolangVariableMap, world } from "@minecraft/server";
 import { currentSeason, currentTimeOfDay, isMistyDay } from "./clock.js";
 import {
+  canSnowSettle,
   isNaturallyCold,
   isDryBiome,
   isSeasonallyFrozen,
-  isWaterSeasonallyFrozen,
   precipitatesHere,
   seasonalTemperature,
   shouldIceThaw,
@@ -24,9 +24,9 @@ import { isBlizzard, isSnowstorm, isStorming, stormIntensity } from "./weather.j
 const COLUMN_RADIUS = 48;
 const COLUMNS_PER_PLAYER_PER_TICK = 4;
 /** The cleanup sweep walks every column within this radius, in order, so nothing is missed. */
-const SWEEP_RADIUS = 64;
+const SWEEP_RADIUS = 96;
 const SWEEP_WIDTH = SWEEP_RADIUS * 2 + 1;
-const SWEEP_COLUMNS_PER_TICK = 96; // full 129x129 area about every 9 seconds
+const SWEEP_COLUMNS_PER_TICK = 192; // full 193x193 area about every 10 seconds
 
 /** Blocks seasonal snow can settle on top of. Player-made blocks like slabs/chests never get snow. */
 const SNOW_SURFACES = new Set([
@@ -98,36 +98,6 @@ function topmost(dimension, x, z) {
   });
 }
 
-function isWaterSource(block) {
-  return block.typeId === "minecraft:water" && Number(block.permutation.getState("liquid_depth") ?? 0) === 0;
-}
-
-function nearFarmland(dimension, pos) {
-  // Frozen water must never dry out farmland (dry, empty farmland turns into dirt for good).
-  for (let dx = -4; dx <= 4; dx++) {
-    for (let dz = -4; dz <= 4; dz++) {
-      for (let dy = -1; dy <= 0; dy++) {
-        try {
-          const b = dimension.getBlock({ x: pos.x + dx, y: pos.y + dy, z: pos.z + dz });
-          if (b?.typeId === "minecraft:farmland") return true;
-        } catch {
-          return true; // unloaded neighbour: be safe, do not freeze
-        }
-      }
-    }
-  }
-  return false;
-}
-
-function canFreeze(dimension, block) {
-  if (!isWaterSource(block)) return false;
-  const neighbours = [block.north(), block.south(), block.east(), block.west()];
-  if (neighbours.some((n) => n === undefined)) return false;
-  // Like vanilla: freeze from the shore inwards, never the middle of open water first.
-  if (neighbours.every((n) => n.typeId === "minecraft:water")) return false;
-  return !nearFarmland(dimension, block.location);
-}
-
 /** One random column near a player: snow, ice, withering and the matching reversals. */
 export function tickColumn(dimension, x, z, settings) {
   const top = topmost(dimension, x, z);
@@ -161,12 +131,7 @@ export function tickColumn(dimension, x, z, settings) {
     return;
   }
 
-  if (settings.freezeWater && isWaterSeasonallyFrozen(biome, y) && canFreeze(dimension, top)) {
-    top.setType(SEASONAL_ICE);
-    return;
-  }
-
-  if (settings.snowOnGround && isStorming() && canHoldSnow(top) && Math.random() < stormIntensity()) {
+  if (settings.snowOnGround && canSnowSettle() && isStorming() && canHoldSnow(top) && Math.random() < stormIntensity()) {
     const above = top.above();
     if (above?.isAir && isSeasonallyFrozen(biome, above.y) && snowsHere(biome, above.y)) {
       above.setType(SEASONAL_SNOW);

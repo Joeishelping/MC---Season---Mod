@@ -185,14 +185,6 @@ export function airTemperatureOffset() {
   return temperatureOffset() + weatherAnomaly() + diurnalOffset();
 }
 
-/**
- * Lakes and rivers react slowly: water lags the air by about a quarter of a season, so ponds
- * freeze over in mid-winter and stay frozen into early spring, like real life.
- */
-export function waterTemperatureOffset() {
-  return curveAt(yearPosition() - 0.25) + weatherAnomaly() * 0.3;
-}
-
 /** Fraction of the 24-hour day that is daylight: about 2/3 at midsummer, 1/3 at midwinter. */
 export function daylightFraction() {
   return 0.5 + (1 / 6) * Math.cos((2 * Math.PI * (yearPosition() - 1.5)) / 4);

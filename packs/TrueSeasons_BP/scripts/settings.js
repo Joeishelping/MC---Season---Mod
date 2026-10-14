@@ -14,8 +14,6 @@ const DEFAULTS = {
   drySnowLineY: 160,
   /** Seasons control how often and how long it rains / snows. */
   seasonalWeather: true,
-  /** Exposed water freezes in winter and turns back into water in spring. */
-  freezeWater: true,
   /** Grass and flowers die off in the cold and come back exactly as they were. */
   witherPlants: true,
   /** Crops near players grow faster in summer. */
@@ -46,6 +44,7 @@ function sanitize(raw) {
   s.seasonLengthDays = clamp(s.seasonLengthDays, MIN_SEASON_LENGTH, MAX_SEASON_LENGTH, DEFAULTS.seasonLengthDays);
   s.maxSnowLayers = clamp(s.maxSnowLayers, 1, 8, DEFAULTS.maxSnowLayers);
   s.drySnowLineY = clamp(s.drySnowLineY, -64, 320, DEFAULTS.drySnowLineY);
+  delete s.freezeWater; // water freezing was removed
   for (const key of Object.keys(DEFAULTS)) {
     if (typeof DEFAULTS[key] === "boolean") s[key] = Boolean(s[key]);
   }

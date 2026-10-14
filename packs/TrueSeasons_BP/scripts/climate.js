@@ -1,4 +1,4 @@
-import { airTemperatureOffset, currentSeason, waterTemperatureOffset } from "./clock.js";
+import { airTemperatureOffset, currentSeason } from "./clock.js";
 import { getSettings } from "./settings.js";
 
 /** Vanilla's snow threshold: precipitation is snow below this temperature. */
@@ -88,11 +88,6 @@ export function seasonalTemperature(biome, y) {
   return applyOffset(baseTemperature(biome, y), airTemperatureOffset());
 }
 
-/** Water temperature: follows the seasons more slowly than the air. */
-export function waterTemperature(biome, y) {
-  return applyOffset(baseTemperature(biome, y), waterTemperatureOffset());
-}
-
 /** Minecraft temperature -> degrees Celsius (0 C is where snow starts). */
 export function toCelsius(t) {
   const c = t < 1 ? (t - SNOW_TEMPERATURE) * 30 : 25.5 + (t - 1) * 12;
@@ -125,18 +120,22 @@ export function isSeasonallyFrozen(biome, y) {
   return seasonalTemperature(biome, y) < SNOW_TEMPERATURE;
 }
 
+/**
+ * Seasonal snow only lasts through late fall and winter. From the first day of spring it all
+ * melts, whatever the temperature, so nothing lingers.
+ */
+export function canSnowSettle() {
+  const season = currentSeason();
+  return season === "fall" || season === "winter";
+}
+
 export function shouldThaw(biome, y) {
-  return !isSeasonallyFrozen(biome, y);
+  return !canSnowSettle() || !isSeasonallyFrozen(biome, y);
 }
 
-/** Water freezes only where it would not freeze naturally, and only once the water is cold. */
-export function isWaterSeasonallyFrozen(biome, y) {
-  if (isNaturallyCold(biome, y) || isDryBiome(biome)) return false;
-  return waterTemperature(biome, y) < SNOW_TEMPERATURE;
-}
-
-export function shouldIceThaw(biome, y) {
-  return !isWaterSeasonallyFrozen(biome, y);
+/** The add-on no longer freezes water; any seasonal ice left from older versions melts. */
+export function shouldIceThaw() {
+  return true;
 }
 
 export function shouldWither(biome, y) {

@@ -17,7 +17,7 @@ BP = ROOT / "packs" / "TrueSeasons_BP"
 RP = ROOT / "packs" / "TrueSeasons_RP"
 DIST = ROOT / "dist"
 
-VERSION = [1, 2, 0]
+VERSION = [1, 3, 0]
 MIN_ENGINE = [1, 21, 130]
 BLOCK_FORMAT = "1.21.130"
 SERVER_MODULE = "2.4.0"

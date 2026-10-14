@@ -114,7 +114,12 @@ system.afterEvents.scriptEventReceive.subscribe(({ id, message, sourceEntity }) 
   if (id === "seasons:cleanup_at") {
     // /scriptevent seasons:cleanup_at <x> <z> <radius> - clean-up around a spot (operators/debug)
     const [x, z, r] = message.trim().split(/\s+/).map(Number);
-    runCleanup(r, (n) => console.info(`[True Seasons] clean-up restored ${n} block(s)`), [{ x, z }]);
+    runCleanup(
+      r,
+      (n, chunks) => console.info(`[True Seasons] clean-up restored ${n} block(s) in ${chunks} loaded chunk(s)`),
+      [{ x, z }],
+      (pct, n) => console.info(`[True Seasons] clean-up ${pct}% (${n})`)
+    );
     return;
   }
   if (id === "seasons:probe") {
