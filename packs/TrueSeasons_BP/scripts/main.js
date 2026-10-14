@@ -2,6 +2,7 @@ import { ItemStack, system, world } from "@minecraft/server";
 import { registerBlockComponents } from "./blocks.js";
 import { advanceClock, currentSeason, loadClock, SEASON_COLORS, SEASON_NAMES, saveClock } from "./clock.js";
 import { registerCommands } from "./commands.js";
+import { runCleanup } from "./cleanup.js";
 import { tickDayLength } from "./daylight.js";
 import { forgetPlayer, tickColumn, tickEffects } from "./effects.js";
 import { getSettings } from "./settings.js";
@@ -110,6 +111,12 @@ world.afterEvents.playerLeave.subscribe(({ playerId }) => forgetPlayer(playerId)
  * ticking area without waiting.
  */
 system.afterEvents.scriptEventReceive.subscribe(({ id, message, sourceEntity }) => {
+  if (id === "seasons:cleanup_at") {
+    // /scriptevent seasons:cleanup_at <x> <z> <radius> - clean-up around a spot (operators/debug)
+    const [x, z, r] = message.trim().split(/\s+/).map(Number);
+    runCleanup(r, (n) => console.info(`[True Seasons] clean-up restored ${n} block(s)`), [{ x, z }]);
+    return;
+  }
   if (id === "seasons:probe") {
     probe(message, sourceEntity);
     return;

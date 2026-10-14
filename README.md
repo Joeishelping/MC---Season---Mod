@@ -31,7 +31,7 @@ All four seasons are always the same length. Set the length with the **slider** 
 - **Seasonal snow and ice are the add-on's own blocks.** They look and work like the real ones, and they're the only snow and ice the add-on ever melts. Naturally generated snow, snow players place, and snowy biomes are never touched.
 - **Frozen water turns back into the exact water source it was**, whether it thaws or gets mined. Water near farmland never freezes, so farmland can't dry out.
 - **A dead plant remembers what it was.** Each type of grass or flower has its own withered block. It grows back into the same plant in spring, and if it's broken while dead, it drops the original plant's items.
-- **Snow only settles on natural ground** (grass, dirt, stone, sand, leaves, logs...), never on slabs, chests or farmland.
+- **Snow only settles on natural ground** (grass, dirt, stone, sand, leaves, logs...), never on slabs, chests or farmland. Under trees it settles on the leaves, not the ground beneath.
 - **Places nobody visits catch up later.** Bedrock only runs chunks near players, so snow, ice and plants revert as soon as someone comes back.
 - **Seasons only move forward.** They follow the day count: sleeping moves them forward, and setting the time back never rewinds a season.
 
@@ -43,8 +43,15 @@ All four seasons are always the same length. Set the length with the **slider** 
 | `/seasons:seasonlength <days>` | operators |
 | `/seasons:seasonconfig` | operators: opens the settings menu |
 | `/seasons:storm <start\|stop>` | operators |
+| `/seasons:cleanup [radius]` | operators: removes **all** seasonal snow and ice and brings every dead plant back, within 128 blocks (or the radius you give, up to 256) of every player |
 
 For testing: `/scriptevent seasons:simulate <x> <z> <radius> <columns>` fast-forwards the seasonal block changes around a spot, and `/scriptevent seasons:probe <x> <z>` shows what the add-on sees there.
+
+## Cleaning up snow
+- **Melting is fast.** Snow disappears in one go once it's warm enough, not layer by layer. A background sweep checks every column within 64 blocks of each player about every 9 seconds, so thawed snow, ice and dead plants near you clear within seconds.
+- **Clean up everything now:** operators can use the **"Clean up all seasonal snow now"** button in the Season Almanac, or `/seasons:cleanup`. It removes all seasonal snow and ice and revives all plants around every player, whatever the season, in a few seconds.
+- **No snow at all:** turn off **"Snow settles and piles up"** in Settings. It still snows, but nothing stays, and any seasonal snow left anywhere is removed as players come near it.
+- Clean-up only ever touches the add-on's own snow, ice and dead plants. Natural snow and snow players place are never removed.
 
 ## Bedrock limits
 - Bedrock decides rain vs. snow by biome, so winter snowstorms in warm biomes are drawn by the add-on: snowflake particles and fog instead of vanilla rain. Mist and fireflies are particles and fog too.

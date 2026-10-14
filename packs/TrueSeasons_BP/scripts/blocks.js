@@ -1,4 +1,5 @@
 import { GameMode, ItemStack } from "@minecraft/server";
+import { getSettings } from "./settings.js";
 import { shouldIceThaw, shouldRevive, shouldThaw } from "./climate.js";
 
 export const SEASONAL_SNOW = "seasons:seasonal_snow";
@@ -42,15 +43,10 @@ function biomeAt(block) {
  * one turned it into.
  */
 
-/** Melts one layer of seasonal snow. */
+/** Melts seasonal snow - the whole pile at once, so thawed ground clears quickly. */
 export function meltSnow(block) {
   if (block.typeId !== SEASONAL_SNOW) return;
-  const layers = Number(block.permutation.getState(LAYERS) ?? 1);
-  if (layers > 1) {
-    block.setPermutation(block.permutation.withState(LAYERS, layers - 1));
-  } else {
-    block.setType("minecraft:air");
-  }
+  block.setType("minecraft:air");
 }
 
 /** Seasonal ice was always a water source - give the water back. */
@@ -85,7 +81,9 @@ export function registerBlockComponents(registry) {
   registry.registerCustomComponent("seasons:seasonal_snow", {
     onRandomTick({ block }) {
       const biome = biomeAt(block);
-      if ((biome && shouldThaw(biome, block.y)) || block.below()?.isAir) meltSnow(block);
+      if (!getSettings().snowOnGround || (biome && shouldThaw(biome, block.y)) || block.below()?.isAir) {
+        meltSnow(block);
+      }
     },
     onPlayerBreak({ block, brokenBlockPermutation, player }) {
       // Same drops as vanilla snow: one snowball per layer, only with a shovel.

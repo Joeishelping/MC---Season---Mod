@@ -1,4 +1,4 @@
-import { PlayerPermissionLevel } from "@minecraft/server";
+import { PlayerPermissionLevel, world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import {
   currentSeason,
@@ -12,6 +12,7 @@ import {
 import { getSettings, MAX_SEASON_LENGTH, MIN_SEASON_LENGTH, saveSettings } from "./settings.js";
 import { seasonalTemperature, toCelsius } from "./climate.js";
 import { isBlizzard, isSnowstorm, isStorming } from "./weather.js";
+import { DEFAULT_CLEANUP_RADIUS, runCleanup } from "./cleanup.js";
 
 const SEASON_BLURB = {
   spring: "Days are getting longer. Heavy rain and misty mornings. Cool places start snowy and thaw as it warms; lakes are the last to melt. Snow melts and plants come back.",
@@ -71,9 +72,30 @@ export async function showAlmanac(player) {
     )
     .button("Close");
   const operator = isOperator(player);
-  if (operator) form.button("Settings");
+  if (operator) form.button("Settings").button("Clean up all seasonal snow now");
   const response = await form.show(player);
-  if (!response.canceled && operator && response.selection === 1) await showSettings(player);
+  if (response.canceled || !operator) return;
+  if (response.selection === 1) await showSettings(player);
+  if (response.selection === 2) startCleanup(player);
+}
+
+/** Removes all seasonal snow & ice and revives plants around every player, reporting back. */
+export function startCleanup(player, radius = DEFAULT_CLEANUP_RADIUS) {
+  const started = runCleanup(radius, (restored) => {
+    const msg = `§aSeason clean-up done:§r restored ${restored} block(s) within ${radius} blocks of every player.`;
+    try {
+      player?.sendMessage(msg);
+    } catch {
+      world.sendMessage(msg);
+    }
+  });
+  const note = started ? "§eCleaning up seasonal snow and ice...§r" : "§eA clean-up is already running.§r";
+  try {
+    player?.sendMessage(note);
+  } catch {
+    // console / command block
+  }
+  return started;
 }
 
 export async function showSettings(player) {
@@ -96,6 +118,7 @@ export async function showSettings(player) {
     .toggle("Snowflakes, falling leaves and fog", { defaultValue: s.particles })
     .toggle("Announce new seasons", { defaultValue: s.announceSeasons })
     .toggle("Show season while holding the almanac", { defaultValue: s.showHud })
+    .toggle("Snow settles and piles up (off = remove it all)", { defaultValue: s.snowOnGround })
     .toggle("Long summer days, short winter days", { defaultValue: s.realisticDayLength })
     .toggle("Show temperature in Fahrenheit", { defaultValue: s.fahrenheit })
     .submitButton("Save");
@@ -113,8 +136,9 @@ export async function showSettings(player) {
     particles: v[6],
     announceSeasons: v[7],
     showHud: v[8],
-    realisticDayLength: v[9],
-    fahrenheit: v[10],
+    snowOnGround: v[9],
+    realisticDayLength: v[10],
+    fahrenheit: v[11],
   });
   setSeasonLength(next.seasonLengthDays);
   player.sendMessage(`§aSeason settings saved.§r Each season now lasts ${next.seasonLengthDays} days. It is ${seasonLine()}.`);

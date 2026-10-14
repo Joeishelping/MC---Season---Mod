@@ -28,6 +28,8 @@ const DEFAULTS = {
   showHud: true,
   /** Long summer days and short winter days, like real life (the 24-hour total stays the same). */
   realisticDayLength: true,
+  /** Seasonal snow settles and piles up on the ground. Off = it snows, but nothing stays. */
+  snowOnGround: true,
   /** Show temperatures in Fahrenheit instead of Celsius. */
   fahrenheit: false,
 };

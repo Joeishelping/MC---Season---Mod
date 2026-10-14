@@ -23,6 +23,10 @@ import { isBlizzard, isSnowstorm, isStorming, stormIntensity } from "./weather.j
  */
 const COLUMN_RADIUS = 48;
 const COLUMNS_PER_PLAYER_PER_TICK = 4;
+/** The cleanup sweep walks every column within this radius, in order, so nothing is missed. */
+const SWEEP_RADIUS = 64;
+const SWEEP_WIDTH = SWEEP_RADIUS * 2 + 1;
+const SWEEP_COLUMNS_PER_TICK = 96; // full 129x129 area about every 9 seconds
 
 /** Blocks seasonal snow can settle on top of. Player-made blocks like slabs/chests never get snow. */
 const SNOW_SURFACES = new Set([
@@ -61,23 +65,37 @@ function safeBiome(dimension, location) {
   }
 }
 
-/**
- * The real top block of a column. getTopmostBlock skips plants and water, so climb up through
- * anything that is not air to reach the actual surface (a flower, the water surface, ...).
- */
-function topmost(dimension, x, z) {
-  let top;
+const DOWN = { x: 0, y: -1, z: 0 };
+let heightRange;
+
+function worldHeight(dimension) {
+  heightRange ??= dimension.heightRange;
+  return heightRange;
+}
+
+/** Casts a ray straight down a column, starting at `fromY`. */
+function rayDown(dimension, x, z, fromY, options) {
+  const { min } = worldHeight(dimension);
+  if (fromY <= min) return undefined;
   try {
-    top = dimension.getTopmostBlock({ x, z });
+    return dimension.getBlockFromRay({ x: x + 0.5, y: fromY, z: z + 0.5 }, DOWN, {
+      maxDistance: fromY - min + 1,
+      ...options,
+    })?.block;
   } catch {
     return undefined; // unloaded / out of bounds
   }
-  for (let steps = 0; top && steps < 96; steps++) {
-    const above = top.above();
-    if (!above || above.isAir) break;
-    top = above;
-  }
-  return top;
+}
+
+/**
+ * The real top block of a column, as seen from the sky: leaves, plants, water and snow
+ * all count (getTopmostBlock skips them, which used to let snow settle under trees).
+ */
+function topmost(dimension, x, z) {
+  return rayDown(dimension, x, z, worldHeight(dimension).max - 0.5, {
+    includeLiquidBlocks: true,
+    includePassableBlocks: true,
+  });
 }
 
 function isWaterSource(block) {
@@ -121,7 +139,7 @@ export function tickColumn(dimension, x, z, settings) {
 
   // Reversals first - they can always run, whatever the settings.
   if (id === SEASONAL_SNOW) {
-    if (shouldThaw(biome, y)) {
+    if (!settings.snowOnGround || shouldThaw(biome, y)) {
       meltSnow(top);
     } else if (isStorming() && snowsHere(biome, y) && Math.random() < stormIntensity()) {
       const layers = Number(top.permutation.getState(LAYERS) ?? 1);
@@ -148,12 +166,64 @@ export function tickColumn(dimension, x, z, settings) {
     return;
   }
 
-  if (isStorming() && canHoldSnow(top) && Math.random() < stormIntensity()) {
+  if (settings.snowOnGround && isStorming() && canHoldSnow(top) && Math.random() < stormIntensity()) {
     const above = top.above();
     if (above?.isAir && isSeasonallyFrozen(biome, above.y) && snowsHere(biome, above.y)) {
       above.setType(SEASONAL_SNOW);
     }
   }
+}
+
+const SEASONAL_TYPES = [SEASONAL_SNOW, SEASONAL_ICE, ...Object.keys(REVIVES)];
+const SEASONAL_RAY = { includeTypes: SEASONAL_TYPES, includePassableBlocks: true, includeLiquidBlocks: false };
+
+/**
+ * Clean-up check for one column: finds every seasonal block in it (rays that only stop at the
+ * add-on's own blocks, so snow under trees or overhangs is found too) and removes snow/ice or
+ * revives plants where the season says so - or always, when `force` is set.
+ * Returns how many blocks were restored.
+ */
+export function cleanColumn(dimension, x, z, force, settings = getSettings()) {
+  let restored = 0;
+  let fromY = worldHeight(dimension).max - 0.5;
+  for (let hits = 0; hits < 8; hits++) {
+    const block = rayDown(dimension, x, z, fromY, SEASONAL_RAY);
+    if (!block) break;
+    fromY = block.y - 0.5;
+    const id = block.typeId;
+    const biome = safeBiome(dimension, block.location);
+    if (!biome && !force) continue;
+    if (id === SEASONAL_SNOW && (force || !settings.snowOnGround || shouldThaw(biome, block.y))) {
+      meltSnow(block);
+      restored++;
+    } else if (id === SEASONAL_ICE && (force || shouldIceThaw(biome, block.y))) {
+      thawIce(block);
+      restored++;
+    } else if (REVIVES[id] && (force || shouldRevive(biome, block.y))) {
+      revivePlant(block);
+      restored++;
+    }
+  }
+  return restored;
+}
+
+const sweepCursor = new Map();
+
+function sweepAround(player, dimension, settings) {
+  let cursor = sweepCursor.get(player.id) ?? 0;
+  const cx = Math.floor(player.location.x);
+  const cz = Math.floor(player.location.z);
+  for (let i = 0; i < SWEEP_COLUMNS_PER_TICK; i++) {
+    const dx = (cursor % SWEEP_WIDTH) - SWEEP_RADIUS;
+    const dz = Math.floor(cursor / SWEEP_WIDTH) - SWEEP_RADIUS;
+    cursor = (cursor + 1) % (SWEEP_WIDTH * SWEEP_WIDTH);
+    try {
+      cleanColumn(dimension, cx + dx, cz + dz, false, settings);
+    } catch {
+      // a single column failing must not stop the sweep
+    }
+  }
+  sweepCursor.set(player.id, cursor);
 }
 
 function boostCrops(player, dimension) {
@@ -290,6 +360,7 @@ function weatherVisuals(player, dimension, settings) {
 
 export function forgetPlayer(playerId) {
   activeFog.delete(playerId);
+  sweepCursor.delete(playerId);
 }
 
 /** Every tick. */
@@ -317,6 +388,7 @@ export function tickEffects(tick) {
         console.warn(`[True Seasons] column tick failed: ${e}`);
       }
     }
+    sweepAround(player, dimension, settings);
     if (tick % 10 === 0) weatherVisuals(player, dimension, settings);
     if (tick % 10 === 5 && season === "fall" && settings.particles) fallingLeaves(player, dimension);
     if (tick % 20 === 0 && season === "summer" && settings.cropGrowth) boostCrops(player, dimension);
